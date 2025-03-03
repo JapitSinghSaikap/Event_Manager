@@ -3,6 +3,7 @@
 This project is a basic REST API for an Event Manager. It provides endpoints to manage events, assignments, and organizers. The API is built using Node.js and Express.
 
 ## File Structure
+```
 Event_Manager/
 ├── controller/
 │   ├── assignment_controller.js
@@ -21,7 +22,7 @@ Event_Manager/
 ├── package.json
 ├── README.md
 ├── server.js
-
+```
 
 ## Description
 
