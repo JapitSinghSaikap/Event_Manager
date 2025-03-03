@@ -5,16 +5,16 @@ This project is a basic REST API for an Event Manager. It provides endpoints to 
 ## File Structure
 Event_Manager/
 ├── controller/
-│ ├── assignment_controller.js
-│ ├── event_controller.js
-│ ├── organiser_controller.js
+│   ├── assignment_controller.js
+│   ├── event_controller.js
+│   ├── organiser_controller.js
 ├── data/
-│ ├── data.js
+│   ├── data.js
 ├── node_modules/
 ├── routes/
-│ ├── assignment_routes.js
-│ ├── event_routes.js
-│ ├── organiser_routes.js
+│   ├── assignment_routes.js
+│   ├── event_routes.js
+│   ├── organiser_routes.js
 ├── .env
 ├── .gitignore
 ├── package-lock.json
