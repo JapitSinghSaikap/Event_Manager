@@ -1,11 +1,13 @@
 const express=require("express");
 const router = express.Router();
-const { getAll,postOrganiser,updateOrganiser,deleteOrganiser ,getOrganiserById,signup} = require("../controller/organiser_contoller");
+const { getAll,postOrganiser,updateOrganiser,deleteOrganiser ,getOrganiserById,signup,login} = require("../controller/organiser_contoller");
 
 router.get('/', getAll);
 router.get('/:id', getOrganiserById);
 router.post('/postOrganiser', postOrganiser);
 router.put('/updateOrganiser/:id', updateOrganiser);
 router.delete('/deleteOrganiser/:id', deleteOrganiser);
+router.post("/signup",signup);
+router.post("/login",login);
 
 module.exports = router;

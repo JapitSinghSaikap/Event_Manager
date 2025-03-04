@@ -17,7 +17,7 @@ exports.getOrganiserById =  (req, res) => {
     const id = parseInt(req.params.id);
     const organiser = organisers.find(o => o.id === id);
     if (!organiser) {
-        return res.status(404).json({ message: "Organiser not found" });
+        return res.status(400).json({ message: "Organiser not found" });
     }
     return res.status(200).json(organiser);
 };
@@ -26,7 +26,7 @@ exports.getOrganiserById =  (req, res) => {
 exports.postOrganiser = (req, res) => {
     const { name, email, role } = req.query;
     if (!name || !email || !role) {
-        return res.status(404).json({ message: "All organiser fields are required" });
+        return res.status(400).json({ message: "All organiser fields are required" });
     }
     const newOrganiser = {
         id: generateId(),
@@ -44,11 +44,11 @@ exports.updateOrganiser =  (req, res) => {
     const id = parseInt(req.params.id);
     const { name, email, role } = req.query;
     if (!name || !email || !role) {
-        return res.status(404).json({ message: "All organiser fields are required" });
+        return res.status(400).json({ message: "All organiser fields are required" });
     }
     const index = organisers.findIndex(o => o.id === id);
     if (index === -1) {
-        return res.status(404).json("Organiser not found");
+        return res.status(400).json("Organiser not found");
     }
     //is index pe change hua hai arr organisers wali mein
     organisers[index] = { id, name, email, role };
@@ -56,23 +56,23 @@ exports.updateOrganiser =  (req, res) => {
     return res.status(200).json(organisers[index]);
 };
 
-//deleted organiser
+//deleted organisers
 exports.deleteOrganiser = (req, res) => {
     const id = parseInt(req.params.id);
     const index = organisers.findIndex(o => o.id === id);
     if (index === -1) {
-      return res.status(404).json({ message: "Organiser not found!!!" });
+      return res.status(400).json({ message: "Organiser not found!!!" });
     }
     organisers.splice(index, 1);
     return res.status(200).json({ message: "Organiser successfully deleted!!!" });
 };
 
 
-//for the signup of the organiser (future use)
+
 exports.signup =  async (req, res) => {
     const { name, email, password,role } = req.query;
     if (!name || !email || !password) {
-      return res.status(404).json({ message: "All fields are required" });
+      return res.status(400).json({ message: "All fields are required" });
     }
     const existing = organisers.find(o => o.email === email);
     if (existing) {
@@ -80,17 +80,16 @@ exports.signup =  async (req, res) => {
     }
     try {
       const newOrganiser = {
-        id: generateId(),
         name,
         email,
         password: password,
         role: role
       };
-      console.log("organiser signup ID:", newOrganiser.id);
       organisers.push(newOrganiser);
+      console.log(newOrganiser);
       return res.status(201).json({
         message: "Signup successful",
-        organiser: { id: newOrganiser.id, name: newOrganiser.name, email: newOrganiser.email, role: newOrganiser.role }
+        organiser: { name: newOrganiser.name, email: newOrganiser.email, role: newOrganiser.role }
       });
     } catch (error) {
       return res.status(500).json({ message: "Error during signup" });
@@ -98,7 +97,6 @@ exports.signup =  async (req, res) => {
 };
 
 
-//for the login of the organiser (future use)
 exports.login = async (req, res) => {
     const { email, password } = req.query;
     if (!email || !password) {
@@ -110,14 +108,14 @@ exports.login = async (req, res) => {
       return res.status(400).json({ message: "Invalid Organiser Details" });
     }
     try {
-      if (!isPassCorrect) {
+      if (!password===organiser.password) {
         return res.status(400).json({ message: "Invalid Credentials" });
       }
       return res.status(200).json({ message: "Login successful",
-        organiser: { id: organiser.id, name: organiser.name, email: organiser.email, role: organiser.role }
+        organiser: { name: organiser.name, email: organiser.email, role: organiser.role }
       });
     } catch (error) {
-      return res.status(500).json({ message: "Error during login" });
+      return res.status(500).json({ message:   "Error during login" });
     }
 };
 

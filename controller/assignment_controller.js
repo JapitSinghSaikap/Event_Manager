@@ -41,7 +41,7 @@ exports.makeAssignment =  (req, res) => {
   const newAssignment = { eId, oId, eventName: event.name };
   assignments.push(newAssignment);
   console.log(newAssignment);
-  return res.status(201).json(newAssignment);
+  return res.status(200).json(newAssignment);
 };
 
 exports.deleteAssignment =  (req, res) => {
