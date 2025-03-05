@@ -1,5 +1,4 @@
 const express = require("express");
-const router = express.Router();
 const {organisers } = require("../data/data");
 
 
@@ -22,22 +21,21 @@ exports.getOrganiserById =  (req, res) => {
     return res.status(200).json(organiser);
 };
 
-//posting an organiser
-exports.postOrganiser = (req, res) => {
-    const { name, email, role } = req.query;
-    if (!name || !email || !role) {
-        return res.status(400).json({ message: "All organiser fields are required" });
-    }
-    const newOrganiser = {
-        id: generateId(),
-        name,
-        email,
-        role
-    }
-    console.log("organiser ID:", newOrganiser.id);
-    organisers.push(newOrganiser);
-    return res.status(200).json(organisers);
-};
+//posting an organiser not required now as added in signup
+// exports.postOrganiser = (req, res) => {
+//     const { name, email, role } = req.query;
+//     if (!name || !email || !role) {
+//         return res.status(400).json({ message: "All organiser fields are required" });
+//     }
+//     const newOrganiser = {
+//         name,
+//         email,
+//         role
+//     }
+//     console.log("organiser ID:", newOrganiser.id);
+//     organisers.push(newOrganiser);
+//     return res.status(200).json(organisers);
+// };
 
 //updating an organiser by id
 exports.updateOrganiser =  (req, res) => {
@@ -80,6 +78,7 @@ exports.signup =  async (req, res) => {
     }
     try {
       const newOrganiser = {
+        id: generateId(),
         name,
         email,
         password: password,
@@ -89,7 +88,7 @@ exports.signup =  async (req, res) => {
       console.log(newOrganiser);
       return res.status(201).json({
         message: "Signup successful",
-        organiser: { name: newOrganiser.name, email: newOrganiser.email, role: newOrganiser.role }
+        organiser: { id:newOrganiser.id, name: newOrganiser.name, email: newOrganiser.email, role: newOrganiser.role }
       });
     } catch (error) {
       return res.status(500).json({ message: "Error during signup" });

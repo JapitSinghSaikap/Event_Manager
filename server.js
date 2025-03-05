@@ -7,7 +7,8 @@ const port = 3000;
 const organiserRoutes = require("./routes/organiser_routes");
 const eventRoutes = require("./routes/event_routes");
 const assignmentRoutes = require("./routes/assignment_routes");
-
+// app.use(express.static("public"));//yeh html page pe data dikhana hoga 
+app.use("/uploads", express.static("uploads"));
 app.use("/organisers", organiserRoutes);
 app.use("/events", eventRoutes);
 app.use("/assignments", assignmentRoutes);
@@ -19,6 +20,7 @@ app.use("/assignments", assignmentRoutes);
 app.listen(port, () => {
     console.log(`Server started at ${port}`);
 });
+
 
 // const express = require("express");
 // // const cors = require("cors");

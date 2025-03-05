@@ -1,5 +1,4 @@
 const express = require("express");
-const router = express.Router();
 const { assignments, events, organisers } = require("../data/data");
 
 //get all the event assignments made to organisers
@@ -7,7 +6,7 @@ exports.getAllAssignments =  (req, res) => {
   return res.status(200).json(assignments);
 };
 
-
+//iske jagah by event name bhi kr skta hun
 exports.getAssignmentsByEventId =  (req, res) => {
     const eId = parseInt(req.params.eId);
     const byEventId = assignments.filter(a => a.eId === eId);
@@ -15,6 +14,7 @@ exports.getAssignmentsByEventId =  (req, res) => {
 };
   
 
+//iski jagah by organiser name bhi kr skta hun
 exports.getAssignmentsByOrganiserId =  (req, res) => {
     const organiserId = parseInt(req.params.organiserId);
     const byOrganiserId = assignments.filter(a => a.organiserId === organiserId);
