@@ -1,20 +1,31 @@
 const express = require("express");
-// const cors = require("cors");
+const { connectDB } = require("./lib/db");
+require("dotenv").config();
+const cors = require("cors");
 const app = express();
+connectDB();
 app.use(express.json()); //middleware not using body-parser just for now
-const port = 3000;
+app.use(cors({
+    origin: "http://localhost:5173", 
+    credentials: true,
+    allowedHeaders: ["Content-Type", "Authorization"]
+  }));
+const port = process.env.PORT || 5000;
 
 const organiserRoutes = require("./routes/organiser_routes");
 const eventRoutes = require("./routes/event_routes");
 const assignmentRoutes = require("./routes/assignment_routes");
 // app.use(express.static("public"));//yeh html page pe data dikhana hoga 
-app.use("/uploads", express.static("uploads"));
+// app.use("/uploads", express.static("uploads"));
+
+
+
 app.use("/organisers", organiserRoutes);
 app.use("/events", eventRoutes);
 app.use("/assignments", assignmentRoutes);
 
 
-
+    
 
 
 app.listen(port, () => {
