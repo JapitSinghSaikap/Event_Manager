@@ -17,13 +17,11 @@ function ProtectedRoute({ children }) {
 export default function App() {
   return (
     <div className="min-h-screen bg-black text-white">
-      {/* Navigation */}
       <Navbar/>
       <Routes>
-        {/* Public Route */}
+ 
         <Route path="/login" element={<Login />} />
 
-        {/* Protected Routes */}
         <Route element={<ProtectedRoute><Outlet /></ProtectedRoute>}>
           <Route path="/" element={<TechEventsPage />} />
           <Route path="/events/:id" element={<EventView />} />
@@ -31,11 +29,9 @@ export default function App() {
           <Route path="/assign-organisers" element={<AssignOrganisersPage />} />
         </Route>
 
-        {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
 
-      {/* Toast Notifications */}
       <Toaster position="top-center" theme="dark" richColors closeButton />
     </div>
   );
