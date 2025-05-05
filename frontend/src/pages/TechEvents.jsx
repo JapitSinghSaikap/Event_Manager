@@ -84,10 +84,11 @@ export default function TechEventsPage() {
     const fetchEvents = async () => {
       try {
         const token = localStorage.getItem("token");
-        const response = await fetch("http://localhost:5000/events", {
+        const response = await fetch("https://event-manager-5vo3.onrender.com/events", {
           headers: { Authorization: `Bearer ${token}` }
         });
         
+        // https://event-manager-5vo3.onrender.com
         if (!response.ok) throw new Error("Failed to fetch events");
         
         const data = await response.json();
