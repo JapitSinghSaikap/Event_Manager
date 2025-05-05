@@ -129,7 +129,7 @@ export default function TechEventsPage() {
 
           <div className="w-full mt-6">
             <div className="flex items-center justify-between mb-4">
-              <div className="flex gap-3 mt-6 mr-[60rem]">
+              <div className="flex gap-3 mt-6 mr-[50rem]">
                 {["all", "conference", "hackathon", "workshop", "meetup"].map((type) => (
                   <button
                     key={type}
