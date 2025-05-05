@@ -29,7 +29,6 @@ export default function MyEventsPage() {
     fetchEvents();
   }, []);
 
-
   useEffect(() => {
     if (!user.id) {
       setEvents([]);
@@ -49,15 +48,12 @@ export default function MyEventsPage() {
     }
   }, [activeTab, allEvents, user.id]);
 
-
-
   const handleCreateEvent = (newEvent) => {
     setAllEvents([...allEvents, newEvent]);
     if (activeTab === "organised" && newEvent.organiser && newEvent.organiser._id === user.id) {
       setEvents([...events, newEvent]);
     }
   };
-
 
   const handleDeleteEvent = async (eventId) => {
     if (!window.confirm("Are you sure you want to delete this event?")) {
@@ -82,27 +78,37 @@ export default function MyEventsPage() {
     }
   };
 
+  function getCategoryBadgeColor(type) {
+    switch (type) {
+      case "conference": return "bg-blue-600 text-white";
+      case "hackathon": return "bg-green-500 text-white";
+      case "workshop": return "bg-yellow-400 text-black";
+      case "meetup": return "bg-purple-500 text-white";
+      default: return "bg-gray-500 text-white";
+    }
+  }
+
   return (
     <div className="p-6 min-h-screen bg-[#121212] text-white">
-      <div className="mb-6 ">
+      <div className="mb-6">
         <h1 className="text-5xl font-bold mb-6 mt-[5rem] text-center">My Events</h1>
-        <div className="flex space-x-4 mt-4">
+        <div className="flex justify-center space-x-4 mt-4">
           <button
             onClick={() => setActiveTab("organised")}
-            className={`py-2 px-4 rounded-full ${
+            className={`py-2 px-4 rounded-full text-sm font-medium ${
               activeTab === "organised"
-                ? "bg-purple-600 text-white"
-                : "bg-gray-700 text-gray-300"
+                ? "bg-white text-black"
+                : "bg-gray-800 text-white hover:bg-gray-700"
             }`}
           >
             Organised
           </button>
           <button
             onClick={() => setActiveTab("joined")}
-            className={`py-2 px-4 rounded-full ${
+            className={`py-2 px-4 rounded-full text-sm font-medium ${
               activeTab === "joined"
-                ? "bg-purple-600 text-white"
-                : "bg-gray-700 text-gray-300"
+                ? "bg-white text-black"
+                : "bg-gray-800 text-white hover:bg-gray-700"
             }`}
           >
             Joined
@@ -110,93 +116,124 @@ export default function MyEventsPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {events.map((event) => (
-          <div
-            key={event._id}
-            className="bg-[#1e1e1e] rounded-xl overflow-hidden flex flex-col shadow-md hover:shadow-lg transition-all duration-300"
-          >
-            <div className="h-48 w-full overflow-hidden">
-              {event.imageUrl ? (
-                <img 
-                  src={event.imageUrl}
-                  alt={event.title}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="flex items-center justify-center h-full bg-neutral-800">
-                  <CalendarDays className="h-12 w-12 text-purple-400" />
-                </div>
-              )}
-            </div>
+      <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+        {events.length > 0 ? (
+          events.map((event) => (
+            <div
+              key={event._id}
+              className="rounded-xl bg-neutral-900 border border-neutral-800 shadow-lg flex flex-col overflow-hidden transition hover:shadow-2xl hover:-translate-y-1 group"
+            >
 
-            <div className="p-4 border-t border-gray-700">
-              <div className="flex justify-between items-center mb-2">
-                <span className="inline-block bg-gray-700 text-gray-300 text-xs px-2 py-1 rounded-full">
-                  Organiser
-                </span>
-                {activeTab === "organised" && (
-                  <button
-                    onClick={() => handleDeleteEvent(event._id)}
-                    className="bg-red-600 hover:bg-red-700 text-white p-1 rounded-full flex items-center justify-center"
-                    title="Delete event"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
+              {/* Event Image */} 
+              <div className="h-48 w-full overflow-hidden">
+                {event.imageUrl ? (
+                  <img
+                    src={event.imageUrl}
+                    alt={event.title}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="flex items-center justify-center h-full bg-neutral-800">
+                    <span className="text-5xl text-neutral-700">📅</span>
+                  </div>
                 )}
               </div>
 
-              <h2 className="text-lg font-semibold">{event.title}</h2>
-
-              <div className="mt-3 flex items-center text-sm text-gray-400">
-                <CalendarDays className="w-4 h-4 mr-2" />
-                {new Date(event.startDate).toLocaleDateString()}
-              </div>
-
-              <div className="mt-2 flex items-center text-sm text-gray-400">
-                <Clock className="w-4 h-4 mr-2" />
-                {new Date(event.startDate).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-              </div>
-
-              <div className="mt-2 flex items-center text-sm text-gray-400">
-                <MapPin className="w-4 h-4 mr-2" />
-                {event.location}
-              </div>
-
-              <div className="mt-4 flex justify-between items-center">
-                <span className="inline-block bg-purple-600 text-white text-xs px-3 py-1 rounded-full">
-                  {event.type}
-                </span>
-                <Link
-                  to={`/events/${event._id}`}
-                  className="text-purple-400 text-sm hover:underline"
-                >
-                  View Details
-                </Link>
+              {/* Event Details */}
+              <div className="flex-1 flex flex-col gap-2 p-5">
+                <div className="flex justify-between items-center mb-1">
+                  <span className={`px-3 py-1 rounded-full text-xs font-semibold capitalize ${getCategoryBadgeColor(event.type)}`}>
+                    {event.type}
+                  </span>
+                  <span className="text-xs text-gray-400">{event.format || "in-person"}</span>
+                  {activeTab === "organised" && (
+                    <button
+                      onClick={() => handleDeleteEvent(event._id)}
+                      className="bg-red-600 hover:bg-red-700 text-white p-1 rounded-full flex items-center justify-center"
+                      title="Delete event"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
+                
+                <h3 className="font-bold text-lg text-white">{event.title}</h3>
+                
+                {event.description && (
+                  <p className="text-gray-300 text-sm line-clamp-2">{event.description}</p>
+                )}
+                
+                <div className="flex items-center gap-2 text-sm text-gray-400 mt-2">
+                  <CalendarDays className="h-4 w-4" />
+                  {new Date(event.startDate).toLocaleDateString()}
+                </div>
+                
+                {event.startDate && (
+                  <div className="flex items-center gap-2 text-sm text-gray-400">
+                    <Clock className="h-4 w-4" />
+                    {new Date(event.startDate).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                  </div>
+                )}
+                
+                <div className="flex items-center gap-2 text-sm text-gray-400">
+                  <MapPin className="h-4 w-4" />
+                  {event.location}
+                </div>
+                
+                {event.technologies?.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {event.technologies.slice(0, 3).map((tech) => (
+                      <span key={tech} className="bg-neutral-800 text-gray-200 px-2 py-1 rounded-full text-xs font-medium">
+                        {tech}
+                      </span>
+                    ))}
+                    {event.technologies.length > 3 && (
+                      <span className="bg-neutral-800 text-gray-200 px-2 py-1 rounded-full text-xs font-medium">
+                        +{event.technologies.length - 3}
+                      </span>
+                    )}
+                  </div>
+                )}
+                
+                <div className="mt-4 flex justify-between items-center">
+                  <span className="text-xs text-gray-400">
+                    {event.price ? `₹${event.price}` : "Free"}
+                  </span>
+                  <Link
+                    to={`/events/${event._id}`}
+                    className="rounded-full bg-purple-600 text-white text-xs px-4 py-2 font-semibold transition hover:bg-purple-700 shadow"
+                  >
+                    View Details
+                  </Link>
+                </div>
               </div>
             </div>
+          ))
+        ) : (
+          <div className="col-span-full text-center text-3xl text-gray-400 py-10">
+            No events found.
           </div>
-        ))}
+        )}
 
         {activeTab === "organised" && (
           <div
             onClick={() => setIsCreateEventOpen(true)}
-            className="cursor-pointer border-2 border-dashed border-gray-600 rounded-xl flex flex-col items-center justify-center p-8 hover:border-purple-500 transition-all duration-300"
+            className="cursor-pointer rounded-xl bg-neutral-900 border border-dashed border-gray-700 flex flex-col items-center justify-center p-8 hover:border-purple-500 transition-all duration-300 h-full shadow-lg hover:shadow-2xl"
           >
-            <div className="bg-gray-800 p-3 rounded-full mb-4">
-              <Plus className="h-6 w-6 text-purple-400" />
+            <div className="bg-neutral-800 p-4 rounded-full mb-4">
+              <Plus className="h-8 w-8 text-purple-400" />
             </div>
-            <h3 className="text-lg font-semibold mb-1">Create New</h3>
-            <p className="text-sm text-gray-400 mb-4">Organise your next event</p>
-            <button className="bg-purple-600 hover:bg-purple-700 text-white text-sm px-4 py-2 rounded-full">
-              Create
+            <h3 className="text-xl font-bold mb-2 text-white">Create New Event</h3>
+            <p className="text-sm text-gray-400 mb-4 text-center">Organize your next conference, hackathon, or meetup</p>
+            <button className="rounded-full bg-purple-600 hover:bg-purple-700 text-white text-sm px-5 py-2 font-semibold shadow">
+              Create Event
             </button>
           </div>
         )}
       </div>
 
-      <CreateEventDialog 
-        open={isCreateEventOpen} 
+      <CreateEventDialog
+        open={isCreateEventOpen}
         onOpenChange={setIsCreateEventOpen}
         onSuccess={handleCreateEvent}
       />

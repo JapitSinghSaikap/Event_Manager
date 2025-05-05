@@ -54,6 +54,14 @@ const eventSchema = new mongoose.Schema({
       ref: "User",
       required: true
     },
+    ticketId: {
+      type: String,
+      required: true
+    },
+    checkedIn: {
+      type: Boolean,
+      default: false
+    },
     registeredAt: {
       type: Date,
       default: Date.now

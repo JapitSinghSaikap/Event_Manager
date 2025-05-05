@@ -1,8 +1,10 @@
 const express = require("express");
 const Event = require("../model/eventModel");
-const User = require('../model/userModel')
-const { sendRegistrationEmail, sendOrganizerNotification } = require('../utils/emailSender');
+const User = require('../model/userModel');
 const Assignment = require('../model/assignModel');
+const { v4: uuidv4 } = require('uuid');
+const QRCode = require('qrcode');
+const { sendRegistrationEmail, sendOrganizerNotification } = require('../utils/emailSender');
 
 exports.registerForEvent = async (req, res) => {
     try {
@@ -17,23 +19,36 @@ exports.registerForEvent = async (req, res) => {
   
       // Check existing registration
       const isRegistered = event.attendees.some(a => 
-        a.user._id.equals(user._id) || 
-        a.user.equals(user._id)
+        a.user._id?.equals(user._id) || 
+        a.user?.equals(user._id)
       );
       
       if (isRegistered) return res.status(400).json({ message: "Already registered" });
   
-      // Add to attendees
-      event.attendees.push({ user: user._id });
+      // Generate unique ticket ID and QR code
+      const ticketId = uuidv4();
+      const qrCodeDataURL = await QRCode.toDataURL(ticketId);
+      console.log("QR code exists:", !!qrCodeDataURL); // Add this line
+
+  
+      // Add to attendees with ticket info
+      event.attendees.push({ 
+        user: user._id,
+        ticketId,
+        registeredAt: new Date()
+      });
+      
       await event.save();
   
-      // Send emails
+      // Send confirmation email with QR code ticket
       await sendRegistrationEmail(
         user.email,
         {
           title: event.title,
           startDate: event.startDate,
-          location: event.location
+          location: event.location,
+          ticketId: ticketId,
+          qrCode: qrCodeDataURL
         },
         event.organiser.email
       );
@@ -59,8 +74,7 @@ exports.registerForEvent = async (req, res) => {
       console.error("Registration error:", error);
       res.status(500).json({ message: "Registration failed" });
     }
-  };
-  
+};
 
 exports.checkRegistrationStatus = async (req, res) => {
     try {
@@ -78,15 +92,58 @@ exports.checkRegistrationStatus = async (req, res) => {
       console.error("Registration check error:", error);
       res.status(500).json({ message: "Error checking registration status" });
     }
-  };
+};
+
+// New endpoint to verify tickets at event check-in
+exports.verifyTicket = async (req, res) => {
+    try {
+      const { ticketId } = req.body;
+      const eventId = req.params.id;
+      
+      const event = await Event.findById(eventId);
+      
+      if (!event) {
+        return res.status(404).json({ message: "Event not found" });
+      }
+      
+      // Check if user is event organizer
+      if (event.organiser.toString() !== req.user.id) {
+        return res.status(403).json({ message: "Only organizers can verify tickets" });
+      }
+
+      // Find the attendee with this ticket
+      const attendeeIndex = event.attendees.findIndex(a => a.ticketId === ticketId);
+      
+      if (attendeeIndex === -1) {
+        return res.status(404).json({ message: "Invalid ticket" });
+      }
+      
+      // Check if already checked in
+      if (event.attendees[attendeeIndex].checkedIn) {
+        return res.status(400).json({ message: "Ticket already used for check-in" });
+      }
+      
+      // Mark as checked in
+      event.attendees[attendeeIndex].checkedIn = true;
+      await event.save();
+      
+      return res.status(200).json({ 
+        message: "Check-in successful",
+        attendee: await User.findById(event.attendees[attendeeIndex].user, 'name email')
+      });
+    } catch (error) {
+      console.error("Ticket verification error:", error);
+      res.status(500).json({ message: "Error verifying ticket" });
+    }
+};
   
 // Get all events
 exports.getAllEvents = async (req, res) => {
     try {
-        const events = await Event.find().populate("organiser", "name email"); // Fixed field name
+        const events = await Event.find().populate("organiser", "name email");
         return res.status(200).json(events);
     } catch (error) {
-        console.error("Error fetching events:", error); // Added logging
+        console.error("Error fetching events:", error);
         return res.status(500).json({ message: "Error fetching events", error });
     }
 };
@@ -95,13 +152,13 @@ exports.getAllEvents = async (req, res) => {
 exports.getEventById = async (req, res) => {
     const id = req.params.id;
     try {
-        const event = await Event.findById(id).populate("organiser", "name email"); // Fixed field name
+        const event = await Event.findById(id).populate("organiser", "name email");
         if (!event) {
             return res.status(404).json({ message: "Event not found" });
         }
         return res.status(200).json(event);
     } catch (error) {
-        console.error("Error fetching event:", error); // Added logging
+        console.error("Error fetching event:", error);
         return res.status(500).json({ message: "Error fetching event", error });
     }
 };
@@ -134,12 +191,11 @@ exports.postEvent = async (req, res) => {
       res.status(500).json({ message: error.message });
     }
 };
-  
 
 // Update an event
 exports.updateEvent = async (req, res) => {
     const id = req.params.id;
-    const { title, description, type, format, technologies, startDate, endDate, location,imageUrl  } = req.body;
+    const { title, description, type, format, technologies, startDate, endDate, location, imageUrl } = req.body;
 
     if (!title || !description || !type || !format || !startDate || !endDate) {
         return res.status(400).json({ message: "All required fields must be provided" });
@@ -183,6 +239,6 @@ exports.deleteEvent = async (req, res) => {
         return res.status(200).json({ message: "Event successfully deleted" });
     } catch (error) {
         console.error("Error deleting event:", error);
-        return res.status(500).json({ message: "Error deleting event", error });
+        return res.status(500).json({ message: "Error deleting event", error });x
     }
 };
