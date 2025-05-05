@@ -55,7 +55,7 @@ export default function EventView() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Registration failed");
+        throw new toast.error(errorData.message || "Registration failed");
       }
       
       //Event data refresh kr rha hai yeh
@@ -65,13 +65,13 @@ export default function EventView() {
       
     } catch (error) {
       console.error(error);
-      alert(error.message || "Registration failed. Please try again.");
+      toast.error(error.message || "Registration failed. Please try again.");
     } finally {
       setIsRegistering(false);
     }
   };
 
-  s
+  
   if (loading) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
@@ -110,10 +110,11 @@ export default function EventView() {
           <div className="w-full md:w-72">
             <div className="bg-neutral-900 border border-neutral-800 rounded-xl shadow p-5 flex flex-col gap-6">
               <div>
-                <div className="text-gray-400 uppercase text-xs font-semibold mb-1">
+                <div className="text-gray-400 uppercase text-xs font-semibold mb-1 ">
                   Registration
                 </div>
-                <div className="text-2xl font-bold text-white mb-2">
+                <div className="text-2xl font-bold text-white mb-2 mt-2">
+                  {/* abhi tk saare events free hain */}
                   {event.price ? `₹${event.price}` : "Free"}
                   <span className="text-base font-normal text-gray-400"> per person</span>
                 </div>

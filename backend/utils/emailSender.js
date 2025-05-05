@@ -18,11 +18,29 @@ const transporter = nodemailer.createTransport({
         to: toEmail,
         subject: `Registration Confirmed: ${eventDetails.title}`,
         html: `
-          <h1>🎉 Registration Successful!</h1>
-          <p>You're registered for <strong>${eventDetails.title}</strong></p>
-          <p>Date: ${new Date(eventDetails.startDate).toLocaleDateString()}</p>
-          <p>Location: ${eventDetails.location}</p>
-          <p>Organizer Contact: ${organizerEmail}</p>
+        <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f9fafb; padding: 24px; border-radius: 12px; box-shadow: 0 6px 12px rgba(0,0,0,0.05); max-width: 500px; margin: 20px auto; color: #111827;">
+        <h1 style="font-size: 24px; font-weight: 600; color: #10b981; margin-bottom: 16px;">
+          🎉 Registration Successful!
+        </h1>
+        <p style="font-size: 16px; margin: 8px 0;">
+          You're registered for 
+          <span style="font-weight: 600; color: #111827; background-color: #d1fae5; padding: 4px 10px; border-radius: 6px;">
+            ${eventDetails.title}
+          </span>
+        </p>
+        <p style="font-size: 15px; margin: 8px 0;">
+          📅 <strong>Date:</strong> ${new Date(eventDetails.startDate).toLocaleDateString()}
+        </p>
+        <p style="font-size: 15px; margin: 8px 0;">
+          📍 <strong>Location:</strong> ${eventDetails.location}
+        </p>
+        <p style="font-size: 15px; margin: 8px 0;">
+          ✉️ <strong>Organizer Contact:</strong> 
+          <a href="mailto:${organizerEmail}" style="color: #2563eb; text-decoration: none;">
+            ${organizerEmail}
+          </a>
+        </p>
+      </div>
         `
       });
       console.log("Registration email sent to:", toEmail);

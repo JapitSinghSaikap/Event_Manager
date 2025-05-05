@@ -27,7 +27,7 @@ export default function CreateEventDialog({ open, onOpenChange }) {
           cloudName: "dlxr0tmaf",
           uploadPreset: "event_images", 
           multiple: false,
-          cropping: true,
+          cropping: false,
           resourceType: "image"
         },
         (error, result) => {
