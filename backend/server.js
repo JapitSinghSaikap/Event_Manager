@@ -3,13 +3,12 @@ const { connectDB } = require("./lib/db");
 require("dotenv").config();
 const cors = require("cors");
 const app = express();
+
+app.use(cors());
+app.use(express.json()); // important for parsing JSON bodies
+
 connectDB();
-app.use(express.json()); //middleware not using body-parser just for now
-app.use(cors({
-    origin: "http://localhost:5173", 
-    credentials: true,
-    allowedHeaders: ["Content-Type", "Authorization"]
-  }));
+
 const port = process.env.PORT || 5000;
 
 const organiserRoutes = require("./routes/organiser_routes");
