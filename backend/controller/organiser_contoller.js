@@ -6,7 +6,7 @@ const User = require("../model/userModel");
 // Get all organisers
 exports.getAll = async (req, res) => {
     try {
-        const organisers = await User.find({ role: "organiser" }); 
+        const organisers = await User.find(); 
         return res.status(200).json(organisers);
     } catch (error) {
         return res.status(500).json({ message: "Error fetching organisers", error });

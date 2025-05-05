@@ -28,7 +28,20 @@ const userSchema = new mongoose.Schema({
         type: String,
         default: "",
         trim: true
-    }
+    }, 
+    eventRegistrations: [{
+        event: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Event",
+        },
+        ticketId: {
+            type: String,
+        },
+        registrationDate: {
+            type: Date,
+            default: Date.now
+        }
+    }]
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', userSchema);

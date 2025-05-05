@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { CalendarDays, MapPin } from "lucide-react"; 
+import { CalendarDays, MapPin } from "lucide-react";
+import { toast } from 'sonner';
 
 export default function EventView() {
   const { id } = useParams();
@@ -9,63 +10,83 @@ export default function EventView() {
   const [isRegistered, setIsRegistered] = useState(false);
   const [isRegistering, setIsRegistering] = useState(false);
 
-  // Fetch event data
+  const API_BASE = "http://localhost:5000";
+  
   const fetchEvent = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`https://event-manager-5vo3.onrender.com/events/${id}`, {
+      const response = await fetch(`${API_BASE}/events/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
+
       if (!response.ok) throw new Error("Failed to fetch event");
+
       return await response.json();
     } catch (error) {
       console.error("Error fetching event:", error);
+      toast.error("Failed to load event details.");
       return null;
     }
   };
 
-  // Initial fetch and registration check
   useEffect(() => {
     const loadEvent = async () => {
+      console.log("Fetching event for ID:", id);
       const data = await fetchEvent();
       if (data) {
         setEvent(data);
         const userId = JSON.parse(localStorage.getItem("user"))?.id;
         setIsRegistered(
-          data.attendees.some(attendee => 
-            (attendee.user?._id === userId) || 
+          data.attendees.some(attendee =>
+            (attendee.user?._id === userId) ||
             (attendee.user?.toString() === userId)
           )
         );
       }
       setLoading(false);
     };
+
     loadEvent();
   }, [id]);
 
-  // Registration handler
   const handleRegistration = async () => {
     setIsRegistering(true);
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(`https://event-manager-5vo3.onrender.com/events/${id}/register`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const user = localStorage.getItem("user");
+      const userID = JSON.parse(user)?.id;
 
+      if (!userID) {
+        toast.error("User not found. Please log in.");
+        return ;
+      }
+      const eventID = id;
+      const eventData = await fetch(`http://localhost:5000/events/${eventID}`);
+
+      const response = await fetch(`http://localhost:5000/events/${userID}/add-event-to-user`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`
+        },
+        body: JSON.stringify({
+          eventId: eventID,
+          userId: userID,
+          eventData: await eventData.json()
+        })
+      })
       if (!response.ok) {
         const errorData = await response.json();
-        console.error(errorData.message || "Registration failed");
+        toast.error(errorData.message || "Failed to register for the event.");
         return;
       }
-      
-      // Refresh event data
-      const updatedEvent = await fetchEvent();
+      const updatedUser = await response.json();
+      const updatedEvent = updatedUser.eventRegistrations.find(event => event._id === eventID);
       setEvent(updatedEvent);
       setIsRegistered(true);
-      
+      toast.success("Registration successful!");
     } catch (error) {
-      console.error(error);
+      console.error("Registration Error:", error);
+      toast.error(error.message || "Registration failed. Please try again.");
     } finally {
       setIsRegistering(false);
     }
@@ -75,14 +96,6 @@ export default function EventView() {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-white">Loading event details...</div>
-      </div>
-    );
-  }
-
-  if (!event) {
-    return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="text-white">Event not found</div>
       </div>
     );
   }
@@ -109,7 +122,7 @@ export default function EventView() {
           <div className="w-full md:w-72">
             <div className="bg-neutral-900 border border-neutral-800 rounded-xl shadow p-5 flex flex-col gap-6">
               <div>
-                <div className="text-gray-400 uppercase text-xs font-semibold mb-1 ">
+                <div className="text-gray-400 uppercase text-xs font-semibold mb-1">
                   Registration
                 </div>
                 <div className="text-2xl font-bold text-white mb-2 mt-2">
@@ -125,8 +138,8 @@ export default function EventView() {
                       : "bg-purple-500 hover:bg-purple-600"
                   } text-white`}
                 >
-                  {isRegistering ? "Processing..." : 
-                   isRegistered ? "Registered ✓" : "Register Now"}
+                  {isRegistering ? "Processing..." :
+                    isRegistered ? "Registered ✓" : "Register Now"}
                 </button>
               </div>
               <div>

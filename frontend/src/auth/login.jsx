@@ -5,7 +5,7 @@ import { EyeIcon, EyeClosedIcon, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 function Login() {
-    const server = "https://event-manager-5vo3.onrender.com"; 
+    const server = "http://localhost:5000"; 
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -24,7 +24,7 @@ function Login() {
             const response = await fetch(`${server}/organisers/signup`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ name, email, password, role: "organiser" })
+                body: JSON.stringify({ name, email, password})
             });
             const data = await response.json();
             if (response.ok) {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { CalendarDays, Clock, MapPin, Plus, Trash2 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import CreateEventDialog from "./createEvent";
 
 export default function MyEventsPage() {
@@ -13,14 +13,16 @@ export default function MyEventsPage() {
   // Fetch all events once
   useEffect(() => {
     const fetchEvents = async () => {
-      const token = localStorage.getItem("token");
+      const {id} = useParams();
       try {
-        const response = await fetch("https://event-manager-5vo3.onrender.com/events", {
+        const res = await fetch(`http://localhost:5000/events/${id}/add-event-to-user`,{
+          method: "GET",
           headers: {
-            "Authorization": `Bearer ${token}`
+            "Authorization": `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "application/json"
           }
-        });
-        const data = await response.json();
+        }); 
+        const data = res.json();
         setAllEvents(data);
       } catch (err) {
         console.error("Error fetching events:", err);
@@ -61,7 +63,7 @@ export default function MyEventsPage() {
     }
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`https://event-manager-5vo3.onrender.com/events/${eventId}`, {
+      const response = await fetch(`http://localhost:5000/events/${eventId}`, {
         method: "DELETE",
         headers: {
           "Authorization": `Bearer ${token}`

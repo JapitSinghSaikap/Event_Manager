@@ -1,244 +1,274 @@
 const express = require("express");
 const Event = require("../model/eventModel");
-const User = require('../model/userModel');
-const Assignment = require('../model/assignModel');
-const { v4: uuidv4 } = require('uuid');
-const QRCode = require('qrcode');
-const { sendRegistrationEmail, sendOrganizerNotification } = require('../utils/emailSender');
+const User = require("../model/userModel");
+const Assignment = require("../model/assignModel");
+const { v4: uuidv4 } = require("uuid");
+const QRCode = require("qrcode");
+const {
+  sendRegistrationEmail,
+  sendOrganizerNotification
+} = require("../utils/emailSender");
 
+// Register for Event
 exports.registerForEvent = async (req, res) => {
-    try {
-      const event = await Event.findById(req.params.id)
-        .populate('organiser', 'email name')
-        .populate('attendees.user', 'email name');
-  
-      const user = await User.findById(req.user.id);
-      
-      // Validate existence
-      if (!event || !user) return res.status(404).json({ message: "Not found" });
-  
-      // Check existing registration
-      const isRegistered = event.attendees.some(a => 
-        a.user._id?.equals(user._id) || 
-        a.user?.equals(user._id)
-      );
-      
-      if (isRegistered) return res.status(400).json({ message: "Already registered" });
-  
-      // Generate unique ticket ID and QR code
-      const ticketId = uuidv4();
-      const qrCodeDataURL = await QRCode.toDataURL(ticketId);
-      console.log("QR code exists:", !!qrCodeDataURL); // Add this line
+  try {
+    const event = await Event.findById(req.params.id)
+      .populate("organiser", "email name")
+      .populate("attendees.user", "email name");
 
-  
-      // Add to attendees with ticket info
-      event.attendees.push({ 
-        user: user._id,
+    const user = await User.findById(req.user.id);
+
+    if (!event || !user) {
+      return res.status(404).json({ message: "Event or user not found" });
+    }
+
+    const isRegistered = event.attendees.some(
+      (attendee) =>
+        attendee.user?._id?.equals(user._id) || attendee.user?.equals(user._id)
+    );
+
+    if (isRegistered) {
+      return res.status(400).json({ message: "Already registered" });
+    }
+
+    const ticketId = uuidv4();
+    const qrCodeDataURL = await QRCode.toDataURL(ticketId);
+
+    event.attendees.push({
+      user: user._id,
+      ticketId,
+      registeredAt: new Date()
+    });
+
+    await event.save();
+
+    await sendRegistrationEmail(
+      user.email,
+      {
+        title: event.title,
+        startDate: event.startDate,
+        location: event.location,
         ticketId,
-        registeredAt: new Date()
-      });
-      
-      await event.save();
-  
-      // Send confirmation email with QR code ticket
-      await sendRegistrationEmail(
-        user.email,
-        {
-          title: event.title,
-          startDate: event.startDate,
-          location: event.location,
-          ticketId: ticketId,
-          qrCode: qrCodeDataURL
-        },
-        event.organiser.email
-      );
-  
-      await sendOrganizerNotification(
-        event.organiser.email,
-        {
-          title: event.title,
-          attendeesCount: event.attendees.length
-        },
-        {
-          name: user.name,
-          email: user.email
-        }
-      );
-  
-      res.status(200).json({
-        message: "Registration successful",
-        event: await Event.findById(event._id).populate('attendees.user')
-      });
-  
-    } catch (error) {
-      console.error("Registration error:", error);
-      res.status(500).json({ message: "Registration failed" });
-    }
+        qrCode: qrCodeDataURL
+      },
+      event.organiser.email
+    );
+
+    await sendOrganizerNotification(
+      event.organiser.email,
+      {
+        title: event.title,
+        attendeesCount: event.attendees.length
+      },
+      {
+        name: user.name,
+        email: user.email
+      }
+    );
+
+    res.status(200).json({
+      message: "Registration successful",
+      event: await Event.findById(event._id).populate("attendees.user")
+    });
+  } catch (error) {
+    console.error("Registration error:", error);
+    res.status(500).json({ message: "Registration failed" });
+  }
 };
 
+// Check Registration Status
 exports.checkRegistrationStatus = async (req, res) => {
-    try {
-      const event = await Event.findById(req.params.id)
-        .populate('attendees.user', '_id');
-      
-      if (!event) return res.status(404).json({ message: "Event not found" });
-  
-      const isRegistered = event.attendees.some(attendee => 
-        attendee.user?._id.toString() === req.user.id
-      );
-      
-      res.status(200).json({ isRegistered });
-    } catch (error) {
-      console.error("Registration check error:", error);
-      res.status(500).json({ message: "Error checking registration status" });
+  try {
+    const event = await Event.findById(req.params.id).populate(
+      "attendees.user",
+      "_id"
+    );
+
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
     }
+
+    const isRegistered = event.attendees.some(
+      (attendee) => attendee.user?._id?.toString() === req.user.id
+    );
+
+    res.status(200).json({ isRegistered });
+  } catch (error) {
+    console.error("Registration check error:", error);
+    res.status(500).json({ message: "Error checking registration status" });
+  }
 };
 
-// New endpoint to verify tickets at event check-in
+// Verify Ticket
 exports.verifyTicket = async (req, res) => {
-    try {
-      const { ticketId } = req.body;
-      const eventId = req.params.id;
-      
-      const event = await Event.findById(eventId);
-      
-      if (!event) {
-        return res.status(404).json({ message: "Event not found" });
-      }
-      
-      // Check if user is event organizer
-      if (event.organiser.toString() !== req.user.id) {
-        return res.status(403).json({ message: "Only organizers can verify tickets" });
-      }
+  try {
+    const { ticketId } = req.body;
+    const eventId = req.params.id;
 
-      // Find the attendee with this ticket
-      const attendeeIndex = event.attendees.findIndex(a => a.ticketId === ticketId);
-      
-      if (attendeeIndex === -1) {
-        return res.status(404).json({ message: "Invalid ticket" });
-      }
-      
-      // Check if already checked in
-      if (event.attendees[attendeeIndex].checkedIn) {
-        return res.status(400).json({ message: "Ticket already used for check-in" });
-      }
-      
-      // Mark as checked in
-      event.attendees[attendeeIndex].checkedIn = true;
-      await event.save();
-      
-      return res.status(200).json({ 
-        message: "Check-in successful",
-        attendee: await User.findById(event.attendees[attendeeIndex].user, 'name email')
-      });
-    } catch (error) {
-      console.error("Ticket verification error:", error);
-      res.status(500).json({ message: "Error verifying ticket" });
+    const event = await Event.findById(eventId);
+
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
     }
+
+    if (event.organiser.toString() !== req.user.id) {
+      return res.status(403).json({ message: "Only organizers can verify tickets" });
+    }
+
+    const attendeeIndex = event.attendees.findIndex((a) => a.ticketId === ticketId);
+
+    if (attendeeIndex === -1) {
+      return res.status(404).json({ message: "Invalid ticket" });
+    }
+
+    if (event.attendees[attendeeIndex].checkedIn) {
+      return res.status(400).json({ message: "Ticket already used for check-in" });
+    }
+
+    event.attendees[attendeeIndex].checkedIn = true;
+    await event.save();
+
+    return res.status(200).json({
+      message: "Check-in successful",
+      attendee: await User.findById(
+        event.attendees[attendeeIndex].user,
+        "name email"
+      )
+    });
+  } catch (error) {
+    console.error("Ticket verification error:", error);
+    res.status(500).json({ message: "Error verifying ticket" });
+  }
 };
-  
-// Get all events
+
+// Get All Events
 exports.getAllEvents = async (req, res) => {
-    try {
-        const events = await Event.find().populate("organiser", "name email");
-        return res.status(200).json(events);
-    } catch (error) {
-        console.error("Error fetching events:", error);
-        return res.status(500).json({ message: "Error fetching events", error });
-    }
+  try {
+    const events = await Event.find().populate("organiser", "name email");
+    return res.status(200).json(events);
+  } catch (error) {
+    console.error("Error fetching events:", error);
+    return res.status(500).json({ message: "Error fetching events", error });
+  }
 };
 
-// Get event by ID
+// Get Event by ID
 exports.getEventById = async (req, res) => {
-    const id = req.params.id;
-    try {
-        const event = await Event.findById(id).populate("organiser", "name email");
-        if (!event) {
-            return res.status(404).json({ message: "Event not found" });
-        }
-        return res.status(200).json(event);
-    } catch (error) {
-        console.error("Error fetching event:", error);
-        return res.status(500).json({ message: "Error fetching event", error });
+  try {
+    const event = await Event.findById(req.params.id).populate("organiser", "name email");
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
     }
+    return res.status(200).json(event);
+  } catch (error) {
+    console.error("Error fetching event:", error);
+    return res.status(500).json({ message: "Error fetching event", error });
+  }
 };
 
-// Create a new event
+// Create Event
 exports.postEvent = async (req, res) => {
-    try {
-      console.log("Received body:", req.body);
-      const { title, description, type, format, technologies, startDate, endDate, location, imageUrl } = req.body;
-  
-      const newEvent = new Event({
+  try {
+    const {
+      title,
+      description,
+      type,
+      format,
+      technologies,
+      startDate,
+      endDate,
+      location,
+      imageUrl
+    } = req.body;
+
+    if (!title || !description || !type || !format || !startDate || !endDate) {
+      return res.status(400).json({ message: "All required fields must be provided" });
+    }
+
+    const newEvent = new Event({
+      title,
+      description,
+      type,
+      format,
+      technologies: technologies || [],
+      startDate: new Date(startDate),
+      endDate: new Date(endDate),
+      location,
+      organiser: req.user.id,
+      imageUrl
+    });
+
+    await newEvent.save();
+
+    res.status(201).json({
+      message: "Event created successfully",
+      event: newEvent
+    });
+  } catch (error) {
+    console.error("Event creation error:", error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Update Event
+exports.updateEvent = async (req, res) => {
+  const id = req.params.id;
+  const {
+    title,
+    description,
+    type,
+    format,
+    technologies,
+    startDate,
+    endDate,
+    location,
+    imageUrl
+  } = req.body;
+
+  if (!title || !description || !type || !format || !startDate || !endDate) {
+    return res.status(400).json({ message: "All required fields must be provided" });
+  }
+
+  try {
+    const updatedEvent = await Event.findByIdAndUpdate(
+      id,
+      {
         title,
         description,
         type,
         format,
-        technologies: technologies || [],
+        technologies,
         startDate: new Date(startDate),
         endDate: new Date(endDate),
         location,
-        organiser: req.user.id,
         imageUrl
-      });
-  
-      console.log("Saving event:", newEvent);
-  
-      await newEvent.save();
-      res.status(201).json({ message: "Event created successfully", event: newEvent });
-    } catch (error) {
-      console.error("Event creation error:", error);
-      res.status(500).json({ message: error.message });
+      },
+      { new: true, runValidators: true }
+    ).populate("organiser", "name email");
+
+    if (!updatedEvent) {
+      return res.status(404).json({ message: "Event not found" });
     }
+
+    return res
+      .status(200)
+      .json({ message: "Event updated successfully", event: updatedEvent });
+  } catch (error) {
+    console.error("Error updating event:", error);
+    return res.status(500).json({ message: "Error updating event", error });
+  }
 };
 
-// Update an event
-exports.updateEvent = async (req, res) => {
-    const id = req.params.id;
-    const { title, description, type, format, technologies, startDate, endDate, location, imageUrl } = req.body;
-
-    if (!title || !description || !type || !format || !startDate || !endDate) {
-        return res.status(400).json({ message: "All required fields must be provided" });
-    }
-
-    try {
-        const updatedEvent = await Event.findByIdAndUpdate(
-            id,
-            { 
-              title, 
-              description, 
-              type, 
-              format, 
-              technologies, 
-              startDate: new Date(startDate),
-              endDate: new Date(endDate),
-              location,
-              imageUrl  
-            },
-            { new: true, runValidators: true }
-        ).populate("organiser", "name email");
-        
-        if (!updatedEvent) {
-            return res.status(404).json({ message: "Event not found" });
-        }
-        return res.status(200).json({ message: "Event updated successfully", event: updatedEvent });
-    } catch (error) {
-        console.error("Error updating event:", error);
-        return res.status(500).json({ message: "Error updating event", error });
-    }
-};
-
-// Delete an event
+// Delete Event
 exports.deleteEvent = async (req, res) => {
-    const id = req.params.id;
-    try {
-        const deletedEvent = await Event.findByIdAndDelete(id);
-        if (!deletedEvent) {
-            return res.status(404).json({ message: "Event not found" });
-        }
-        return res.status(200).json({ message: "Event successfully deleted" });
-    } catch (error) {
-        console.error("Error deleting event:", error);
-        return res.status(500).json({ message: "Error deleting event", error });x
+  try {
+    const deletedEvent = await Event.findByIdAndDelete(req.params.id);
+    if (!deletedEvent) {
+      return res.status(404).json({ message: "Event not found" });
     }
+    return res.status(200).json({ message: "Event successfully deleted" });
+  } catch (error) {
+    console.error("Error deleting event:", error);
+    return res.status(500).json({ message: "Error deleting event", error });
+  }
 };

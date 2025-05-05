@@ -78,7 +78,7 @@ export default function CreateEventDialog({ open, onOpenChange }) {
     console.log("Submitting eventData:", eventData);
 
     try {
-      const response = await fetch("https://event-manager-5vo3.onrender.com/events/postEvent", {
+      const response = await fetch("http://localhost:5000/events/postEvent", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
