@@ -5,14 +5,14 @@ import { Users, X, Plus } from "lucide-react";
 // Dummy fetchers: replace with your real API
 async function fetchEvents() {
   const token = localStorage.getItem("token");
-  const res = await fetch("http://localhost:5000/events", {
+  const res = await fetch("https://event-manager-5vo3.onrender.com/events", {
     headers: { Authorization: `Bearer ${token}` }
   });
   return res.json();
 }
 async function fetchOrganisers() {
   const token = localStorage.getItem("token");
-  const res = await fetch("http://localhost:5000/organisers", {
+  const res = await fetch("https://event-manager-5vo3.onrender.com/organisers", {
     headers: { Authorization: `Bearer ${token}` }
   });
   return res.json();

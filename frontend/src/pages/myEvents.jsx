@@ -15,7 +15,7 @@ export default function MyEventsPage() {
     const fetchEvents = async () => {
       const token = localStorage.getItem("token");
       try {
-        const response = await fetch("http://localhost:5000/events", {
+        const response = await fetch("https://event-manager-5vo3.onrender.com/events", {
           headers: {
             "Authorization": `Bearer ${token}`
           }
@@ -65,7 +65,7 @@ export default function MyEventsPage() {
     }
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`http://localhost:5000/events/${eventId}`, {
+      const response = await fetch(`https://event-manager-5vo3.onrender.com/events/${eventId}`, {
         method: "DELETE",
         headers: {
           "Authorization": `Bearer ${token}`

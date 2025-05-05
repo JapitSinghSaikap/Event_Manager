@@ -13,7 +13,7 @@ export default function EventView() {
   const fetchEvent = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`http://localhost:5000/events/${id}`, {
+      const response = await fetch(`https://event-manager-5vo3.onrender.com/events/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (!response.ok) throw new Error("Failed to fetch event");
@@ -48,7 +48,7 @@ export default function EventView() {
     setIsRegistering(true);
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`http://localhost:5000/events/${id}/register`, {
+      const response = await fetch(`https://event-manager-5vo3.onrender.com/events/${id}/register`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` }
       });

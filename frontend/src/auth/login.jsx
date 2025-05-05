@@ -5,7 +5,7 @@ import { EyeIcon, EyeClosedIcon, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 function Login() {
-    const server = "http://localhost:5000"; 
+    const server = "https://event-manager-5vo3.onrender.com"; 
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
