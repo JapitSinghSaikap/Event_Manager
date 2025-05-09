@@ -166,6 +166,7 @@ exports.getEventById = async (req, res) => {
   }
 };
 
+
 // Create Event
 exports.postEvent = async (req, res) => {
   try {
@@ -177,22 +178,41 @@ exports.postEvent = async (req, res) => {
       technologies,
       startDate,
       endDate,
-      location,
-      imageUrl
+      location = "",
+      imageUrl = ""
     } = req.body;
 
+    // Basic required fields check
     if (!title || !description || !type || !format || !startDate || !endDate) {
       return res.status(400).json({ message: "All required fields must be provided" });
     }
+    // Parse and validate dates
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+      return res.status(400).json({ message: "Invalid start or end date" });
+    }
+    if (end < start) {
+      return res.status(400).json({ message: "End date must be after start date" });
+    }
+    
+    const trimedTitle = title.trim();
+    const trimedDescription = description.trim();
+    // Ensure technologies is an array
+    const technologiesArray = Array.isArray(technologies)
+      ? technologies
+      : (typeof technologies === "string" && technologies.length > 0)
+        ? technologies.split(",").map(t => t.trim())
+        : [];
 
     const newEvent = new Event({
-      title,
-      description,
+      title : trimedTitle,
+      description : trimedDescription,
       type,
       format,
-      technologies: technologies || [],
-      startDate: new Date(startDate),
-      endDate: new Date(endDate),
+      technologies: technologiesArray,
+      startDate : start,
+      endDate : end,
       location,
       organiser: req.user.id,
       imageUrl
@@ -205,10 +225,16 @@ exports.postEvent = async (req, res) => {
       event: newEvent
     });
   } catch (error) {
+    // Handle Mongoose validation errors
+    if (error.name === "ValidationError") {
+      return res.status(400).json({ message: error.message });
+    }
     console.error("Event creation error:", error);
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
+
+
 
 // Update Event
 exports.updateEvent = async (req, res) => {

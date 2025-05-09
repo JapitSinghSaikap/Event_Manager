@@ -1,5 +1,4 @@
 const express = require("express");
-const {organisers } = require("../data/data");
 const jwt = require("jsonwebtoken");
 const User = require("../model/userModel");
 

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { X, Image as ImageIcon } from "lucide-react";
 
+
 export default function CreateEventDialog({ open, onOpenChange }) {
   const widgetRef = useRef();
   const [technologies, setTechnologies] = useState([]);
@@ -71,8 +72,8 @@ export default function CreateEventDialog({ open, onOpenChange }) {
     const eventData = {
       ...formData,
       technologies,
-      startDate: new Date(`${formData.startDate}T${formData.startTime}`),
-      endDate: new Date(`${formData.endDate}T${formData.endTime}`),
+      startDate: new Date(`${formData.startDate}T${formData.startTime}`).toISOString(),
+      endDate: new Date(`${formData.endDate}T${formData.endTime}`).toISOString(),
     };
 
     console.log("Submitting eventData:", eventData);

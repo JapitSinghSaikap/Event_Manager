@@ -31,7 +31,7 @@ router.post("/:id/verify-ticket", authenticate, verifyTicket);
 
 // Protected event routes
 router.get("/:id", authenticate, getEventById);
-router.post("/", authenticate, postEvent);
+router.post("/postEvent", authenticate, postEvent);
 router.put("/:id", authenticate, updateEvent);
 router.delete("/:id", authenticate, deleteEvent);
 
