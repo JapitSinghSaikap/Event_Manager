@@ -137,3 +137,25 @@ exports.login = async (req, res) => {
         return res.status(500).json({ message: "Error during login", error });
     }
 };
+
+
+exports.getAllRegisteredEvents = async (req, res) => {
+    try {
+        const userId = req.user.id; 
+        const user = await User.findById(userId).populate("eventRegistrations.event");
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        const registeredEvents = user.eventRegistrations.map(registration => ({
+            event: registration.event,
+            ticketId: registration.ticketId,
+            registrationDate: registration.registrationDate
+        }));
+        return res.status(200).json(registeredEvents);
+
+    }
+    catch(error){
+        console.error("Error fetching registered events:", error);
+        return res.status(500).json({ message: "Error fetching registered events" });
+    }
+}

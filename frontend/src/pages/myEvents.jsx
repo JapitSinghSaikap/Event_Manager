@@ -11,19 +11,30 @@ export default function MyEventsPage() {
   const user = JSON.parse(localStorage.getItem("user") || "{}");
 
   // Fetch all events once
+  const userID = user.id;
+  const userName = user.name;
+  const userEmail = user.email;
+  console.log("User ID : ", userID);
+  console.log("User Name : ", userName);
+  console.log("User Email : ", userEmail);
+
   useEffect(() => {
     const fetchEvents = async () => {
-      const {id} = useParams();
       try {
-        const res = await fetch(`http://localhost:5000/events/${id}/add-event-to-user`,{
+        const res = await fetch(`http://localhost:5000/organisers/getOrganiserEvent`,{
           method: "GET",
           headers: {
             "Authorization": `Bearer ${localStorage.getItem("token")}`,
             "Content-Type": "application/json"
           }
         }); 
-        const data = res.json();
-        setAllEvents(data);
+        const data = await res.json();
+        const filteredData = data.filter(item => item.event !== null);
+        setAllEvents(filteredData);
+        setEvents(filteredData);
+        console.log("All Events: ", data);
+        // console.log("Fetched Events: ", allEvents);
+        
       } catch (err) {
         console.error("Error fetching events:", err);
       }
@@ -31,24 +42,24 @@ export default function MyEventsPage() {
     fetchEvents();
   }, []);
 
-  useEffect(() => {
-    if (!user.id) {
-      setEvents([]);
-      return;
-    }
-    if (activeTab === "organised") {
-      setEvents(allEvents.filter(event =>
-        event.organiser && (event.organiser._id === user.id || event.organiser === user.id)
-      ));
-    } else {
-      setEvents(allEvents.filter(event =>
-        Array.isArray(event.attendees) &&
-        event.attendees.some(attendee =>
-          (attendee.user && (attendee.user._id === user.id || attendee.user === user.id))
-        )
-      ));
-    }
-  }, [activeTab, allEvents, user.id]);
+  // useEffect(() => {
+  //   if (!user.id) {
+  //     setEvents([]);
+  //     return;
+  //   }
+  //   if (activeTab === "organised") {
+  //     setEvents(allEvents.filter(event =>
+  //       event.organiser && (event.organiser._id === user.id || event.organiser === user.id)
+  //     ));
+  //   } else {
+  //     setEvents(allEvents.filter(event =>
+  //       Array.isArray(event.attendees) &&
+  //       event.attendees.some(attendee =>
+  //         (attendee.user && (attendee.user._id === user.id || attendee.user === user.id))
+  //       )
+  //     ));
+  //   }
+  // }, [activeTab, allEvents, user.id]);
 
   const handleCreateEvent = (newEvent) => {
     setAllEvents([...allEvents, newEvent]);
@@ -120,18 +131,16 @@ export default function MyEventsPage() {
 
       <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
         {events.length > 0 ? (
-          events.map((event) => (
+          events.map((item,index) => (
             <div
-              key={event._id}
+              key={index}
               className="rounded-xl bg-neutral-900 border border-neutral-800 shadow-lg flex flex-col overflow-hidden transition hover:shadow-2xl hover:-translate-y-1 group"
             >
-
-              {/* Event Image */} 
               <div className="h-48 w-full overflow-hidden">
-                {event.imageUrl ? (
+                {item.event.imageUrl ? (
                   <img
-                    src={event.imageUrl}
-                    alt={event.title}
+                    src={item.event.imageUrl}
+                    alt={item.event.title}
                     className="w-full h-full object-cover"
                   />
                 ) : (
@@ -140,17 +149,15 @@ export default function MyEventsPage() {
                   </div>
                 )}
               </div>
-
-              {/* Event Details */}
               <div className="flex-1 flex flex-col gap-2 p-5">
                 <div className="flex justify-between items-center mb-1">
-                  <span className={`px-3 py-1 rounded-full text-xs font-semibold capitalize ${getCategoryBadgeColor(event.type)}`}>
-                    {event.type}
+                  <span className={`px-3 py-1 rounded-full text-xs font-semibold capitalize ${getCategoryBadgeColor(item.event.type)}`}>
+                    {item.event.type}
                   </span>
-                  <span className="text-xs text-gray-400">{event.format || "in-person"}</span>
+                  <span className="text-xs text-gray-400">{item.event.format || "in-person"}</span>
                   {activeTab === "organised" && (
                     <button
-                      onClick={() => handleDeleteEvent(event._id)}
+                      onClick={() => handleDeleteEvent(item.event._id)}
                       className="bg-red-600 hover:bg-red-700 text-white p-1 rounded-full flex items-center justify-center"
                       title="Delete event"
                     >
@@ -159,39 +166,40 @@ export default function MyEventsPage() {
                   )}
                 </div>
                 
-                <h3 className="font-bold text-lg text-white">{event.title}</h3>
+                <h3 className="font-bold text-lg text-white">{item.event.title}</h3>
                 
-                {event.description && (
-                  <p className="text-gray-300 text-sm line-clamp-2">{event.description}</p>
+                {item.event.description && (
+                  <p className="text-gray-300 text-sm line-clamp-2">{item.event.description}</p>
                 )}
                 
                 <div className="flex items-center gap-2 text-sm text-gray-400 mt-2">
                   <CalendarDays className="h-4 w-4" />
-                  {new Date(event.startDate).toLocaleDateString()}
+                  {new Date(item.event.startDate).toLocaleDateString()}
                 </div>
                 
-                {event.startDate && (
+                {item.event.startDate && (
                   <div className="flex items-center gap-2 text-sm text-gray-400">
                     <Clock className="h-4 w-4" />
-                    {new Date(event.startDate).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                    {new Date(item.event.startDate).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                   </div>
                 )}
                 
                 <div className="flex items-center gap-2 text-sm text-gray-400">
                   <MapPin className="h-4 w-4" />
-                  {event.location}
+                  {item.event.location}
                 </div>
                 
-                {event.technologies?.length > 0 && (
+
+                {item.event.technologies?.length > 0 && (
                   <div className="flex flex-wrap gap-2 mt-2">
-                    {event.technologies.slice(0, 3).map((tech) => (
+                    {item.event.technologies.slice(0, 3).map((tech) => (
                       <span key={tech} className="bg-neutral-800 text-gray-200 px-2 py-1 rounded-full text-xs font-medium">
                         {tech}
                       </span>
                     ))}
-                    {event.technologies.length > 3 && (
+                    {item.event.technologies.length > 3 && (
                       <span className="bg-neutral-800 text-gray-200 px-2 py-1 rounded-full text-xs font-medium">
-                        +{event.technologies.length - 3}
+                        +{item.event.technologies.length - 3}
                       </span>
                     )}
                   </div>
@@ -199,10 +207,10 @@ export default function MyEventsPage() {
                 
                 <div className="mt-4 flex justify-between items-center">
                   <span className="text-xs text-gray-400">
-                    {event.price ? `₹${event.price}` : "Free"}
+                    {item.event.price ? `₹${item.event.price}` : "Free"}
                   </span>
                   <Link
-                    to={`/events/${event._id}`}
+                    to={`/events/${item.event._id}`}
                     className="rounded-full bg-purple-600 text-white text-xs px-4 py-2 font-semibold transition hover:bg-purple-700 shadow"
                   >
                     View Details
@@ -242,3 +250,7 @@ export default function MyEventsPage() {
     </div>
   );
 }
+
+
+
+
