@@ -94,6 +94,7 @@ export default function CreateEventDialog({ open, onOpenChange }) {
         const errorData = await response.json();
         throw new Error(errorData.message || "Event creation failed");
       }
+      console.log("Response :: ", response);
       onOpenChange(false);
 
       const res = await response.json();  

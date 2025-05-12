@@ -170,8 +170,11 @@ exports.getAllCreatedEvents = async (req, res) => {
             return res.status(404).json({ message: "User not found" });
         }
 
-        const createdEvents = user.eventCreated.map(created => ({
+        const createdEvents = user.eventCreated
+        .filter(e => e.event) // ignore undefined events
+        .map(created => ({
             event: created.event,
+            createdAt: created.createdAt,
         }));
 
         console.log(createdEvents);
@@ -182,3 +185,4 @@ exports.getAllCreatedEvents = async (req, res) => {
         return res.status(500).json({ message: "Error fetching created events" });
     }
 };
+

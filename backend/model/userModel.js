@@ -44,12 +44,10 @@ const userSchema = new mongoose.Schema({
     }],
     eventCreated: [
         {
-          event: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Event",
-          },
-        },
-      ],
+          event: { type: mongoose.Schema.Types.ObjectId, ref: "Event" },
+          createdAt: { type: Date, default: Date.now }
+        }
+      ]
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', userSchema);

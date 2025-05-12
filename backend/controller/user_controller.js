@@ -24,7 +24,6 @@ exports.addEventToUser = async (req, res) => {
     }
 };
 
-
 exports.addEventToCreatedUser = async (req, res) => {
     const { id } = req.params;
     const { eventID } = req.body;
@@ -39,7 +38,7 @@ exports.addEventToCreatedUser = async (req, res) => {
 
         const updatedUser = await User.findByIdAndUpdate(
             id,
-            { $addToSet: { eventCreated: new mongoose.Types.ObjectId(eventID) } },
+            { $addToSet: { eventCreated: { event: new mongoose.Types.ObjectId(eventID) } } },
             { new: true, runValidators: true }
         );
 
