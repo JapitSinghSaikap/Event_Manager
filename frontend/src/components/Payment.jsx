@@ -19,15 +19,12 @@ const Payment = ({ amount, onPaymentSuccess }) => {
       const { id, amount: orderAmount, currency } = orderData.order;
 
       const options = {
-        key: 'rzp_test_zlpkrN2ub1TXkS',
+        key: process.env.RAZORPAY_KEY_ID,
         amount: orderAmount,
         currency,
         order_id: id,
         handler: function (response) {
-          // Show success message
           toast.success(`Payment successful! Payment ID: ${response.razorpay_payment_id}`);
-          
-          // ✅ Call the registration function
           if (onPaymentSuccess) {
             onPaymentSuccess(response.razorpay_payment_id);
           }
