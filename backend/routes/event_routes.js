@@ -11,7 +11,7 @@ const {
   verifyTicket
 } = require("../controller/event_controller");
 
-const { addEventToUser, getAllUserEvents } = require("../controller/user_controller")
+const { addEventToUser, addEventToCreatedUser } = require("../controller/user_controller")
 
 const { authenticate } = require("../middleware/authMiddle");
 
@@ -24,7 +24,7 @@ router.get("/:id/check-registration", authenticate, checkRegistrationStatus);
 
 // Add event to user
 router.post("/:id/add-event-to-user", addEventToUser);
-router.get("/:id/get-user-events", getAllUserEvents);
+router.post("/:id/add-event-to-created-user",addEventToCreatedUser);
 
 // Ticket verification
 router.post("/:id/verify-ticket", authenticate, verifyTicket);

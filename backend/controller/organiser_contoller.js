@@ -159,3 +159,26 @@ exports.getAllRegisteredEvents = async (req, res) => {
         return res.status(500).json({ message: "Error fetching registered events" });
     }
 }
+
+
+exports.getAllCreatedEvents = async (req, res) => {
+    try {
+        const userId = req.user.id; 
+        const user = await User.findById(userId).populate("eventCreated.event");
+        
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        const createdEvents = user.eventCreated.map(created => ({
+            event: created.event,
+        }));
+
+        console.log(createdEvents);
+
+        return res.status(200).json(createdEvents);
+    } catch (error) {
+        console.error("Error fetching created events:", error);
+        return res.status(500).json({ message: "Error fetching created events" });
+    }
+};

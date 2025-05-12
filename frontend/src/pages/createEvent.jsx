@@ -64,6 +64,8 @@ export default function CreateEventDialog({ open, onOpenChange }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem("token");
+    const user = localStorage.getItem("user");
+    const userID = JSON.parse(user)?.id;
     if (!token) {
       alert("You must be logged in to create an event.");
       return;
@@ -93,6 +95,31 @@ export default function CreateEventDialog({ open, onOpenChange }) {
         throw new Error(errorData.message || "Event creation failed");
       }
       onOpenChange(false);
+
+      const res = await response.json();  
+      const eventID = res.event._id; 
+      console.log("Event created with ID:", eventID);
+      console.log("New Event Data:", res.event);
+
+
+      const addEventToCreatedUser = await fetch(`http://localhost:5000/events/${userID}/add-event-to-created-user`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          eventID: eventID,
+          userID: userID, 
+          eventData: res.event
+        })
+      });
+      if (!addEventToCreatedUser.ok) {
+        const errorData = await addEventToCreatedUser.json();
+        throw new Error(errorData.message || "Failed to add event to user");
+      }
+      console.log("Event added to user successfully");
+
     } catch (err) {
       alert(err.message);
     }

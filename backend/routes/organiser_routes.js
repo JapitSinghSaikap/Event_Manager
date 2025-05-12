@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { getAll, postOrganiser, updateOrganiser, deleteOrganiser, getOrganiserById,signup,login, getAllRegisteredEvents } = require("../controller/organiser_contoller");
+const { getAll, postOrganiser, updateOrganiser, deleteOrganiser, getOrganiserById,signup,login, getAllRegisteredEvents , getAllCreatedEvents} = require("../controller/organiser_contoller");
 const { authenticate } = require("../middleware/authMiddle");
 
 // Public route
@@ -9,7 +9,8 @@ router.post("/signup",signup);
 router.post("/login",login);
 
 // get current events created by the organiser 
-router.get("/getOrganiserEvent",authenticate, getAllRegisteredEvents); 
+router.get("/getOrganiserEvent",authenticate, getAllRegisteredEvents);
+router.get("/getCreatedEvents",authenticate, getAllCreatedEvents); 
 
 // get events joied by the organiser 
 

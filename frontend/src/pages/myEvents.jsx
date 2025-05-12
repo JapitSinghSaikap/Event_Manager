@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { CalendarDays, Clock, MapPin, Plus, Trash2 } from "lucide-react";
-import { Link, useParams } from "react-router-dom";
+import { Link } from "react-router-dom";
 import CreateEventDialog from "./createEvent";
 
 export default function MyEventsPage() {
@@ -14,10 +14,7 @@ export default function MyEventsPage() {
   const userID = user.id;
   const userName = user.name;
   const userEmail = user.email;
-  console.log("User ID : ", userID);
-  console.log("User Name : ", userName);
-  console.log("User Email : ", userEmail);
-
++
   useEffect(() => {
     const fetchEvents = async () => {
       try {
@@ -31,10 +28,7 @@ export default function MyEventsPage() {
         const data = await res.json();
         const filteredData = data.filter(item => item.event !== null);
         setAllEvents(filteredData);
-        setEvents(filteredData);
-        console.log("All Events: ", data);
-        // console.log("Fetched Events: ", allEvents);
-        
+        setEvents(filteredData);        
       } catch (err) {
         console.error("Error fetching events:", err);
       }
@@ -42,24 +36,6 @@ export default function MyEventsPage() {
     fetchEvents();
   }, []);
 
-  // useEffect(() => {
-  //   if (!user.id) {
-  //     setEvents([]);
-  //     return;
-  //   }
-  //   if (activeTab === "organised") {
-  //     setEvents(allEvents.filter(event =>
-  //       event.organiser && (event.organiser._id === user.id || event.organiser === user.id)
-  //     ));
-  //   } else {
-  //     setEvents(allEvents.filter(event =>
-  //       Array.isArray(event.attendees) &&
-  //       event.attendees.some(attendee =>
-  //         (attendee.user && (attendee.user._id === user.id || attendee.user === user.id))
-  //       )
-  //     ));
-  //   }
-  // }, [activeTab, allEvents, user.id]);
 
   const handleCreateEvent = (newEvent) => {
     setAllEvents([...allEvents, newEvent]);
