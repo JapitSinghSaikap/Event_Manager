@@ -59,3 +59,8 @@ Event_Manager/
    EMAIL_SERVICE=
    RAZORPAY_KEY_ID=
    RAZORPAY_KEY_SECRET=
+4. Go to /frontend/components/Payment.jsx and update razorpay_key_id
+5. Run the following commnand in both /frontend and /backend:
+   ```bash
+   npm run dev
+   
