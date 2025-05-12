@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams , useNavigate} from "react-router-dom";
 import { CalendarDays, MapPin } from "lucide-react";
 import { toast } from 'sonner';
 
 export default function EventView() {
+  const navigate = useNavigate();
   const { id } = useParams();
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -37,7 +38,7 @@ export default function EventView() {
         setEvent(data);
         const userId = JSON.parse(localStorage.getItem("user"))?.id;
         setIsRegistered(
-          data.attendees.some(attendee =>
+          data.attendees?.some(attendee =>
             (attendee.user?._id === userId) ||
             (attendee.user?.toString() === userId)
           )
@@ -60,8 +61,16 @@ export default function EventView() {
         return ;
       }
       const eventID = id;
-      const eventData = await fetch(`http://localhost:5000/events/${eventID}`);
-
+      const eventData = await fetch(`http://localhost:5000/events/${eventID}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`
+        }
+      });
+      const eventJson = await eventData.json();
+      if (!eventJson) {
+        toast.error("Event not found.");
+        return ;
+      }
       const response = await fetch(`http://localhost:5000/events/${userID}/add-event-to-user`, {
         method: "POST",
         headers: {
@@ -71,7 +80,7 @@ export default function EventView() {
         body: JSON.stringify({
           eventId: eventID,
           userId: userID,
-          eventData: await eventData.json()
+          eventData: await eventJson,
         })
       })
       if (!response.ok) {
@@ -98,6 +107,10 @@ export default function EventView() {
         <div className="text-white">Loading event details...</div>
       </div>
     );
+  }
+
+  if (!event) {
+    navigate("/my-events");
   }
 
   return (
