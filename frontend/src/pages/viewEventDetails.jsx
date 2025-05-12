@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams , useNavigate} from "react-router-dom";
 import { CalendarDays, MapPin } from "lucide-react";
+import Payment from "../components/Payment";
 import { toast } from 'sonner';
 
 export default function EventView() {
@@ -80,7 +81,7 @@ export default function EventView() {
         body: JSON.stringify({
           eventId: eventID,
           userId: userID,
-          eventData: await eventJson,
+          eventData: eventJson,
         })
       })
       if (!response.ok) {
@@ -142,18 +143,23 @@ export default function EventView() {
                   {event.price ? `₹${event.price}` : "Free"}
                   <span className="text-base font-normal text-gray-400"> per person</span>
                 </div>
-                <button
-                  onClick={handleRegistration}
-                  disabled={isRegistered || isRegistering}
-                  className={`w-full py-2 rounded-lg font-semibold text-base transition ${
-                    isRegistered
-                      ? "bg-green-600 cursor-not-allowed"
-                      : "bg-purple-500 hover:bg-purple-600"
-                  } text-white`}
-                >
-                  {isRegistering ? "Processing..." :
-                    isRegistered ? "Registered ✓" : "Register Now"}
-                </button>
+
+                {
+                  event.price ? (
+                    <Payment amount={event.price} onPaymentSuccess={() => handleRegistration()} />
+                  ) : (
+                    <button
+                      onClick={handleRegistration}
+                      className={`bg-purple-600 text-white px-4 py-2 rounded-lg cursor-pointer transition duration-200 ${
+                        isRegistered ? "opacity-50 cursor-not-allowed" : ""
+                      }`}
+                      disabled={isRegistered || isRegistering}
+                    >
+                      {isRegistered ? "Registered" : "Register"}
+                    </button>
+                  )
+                }
+
               </div>
               <div>
                 <div className="text-gray-400 text-xs font-semibold mb-2">

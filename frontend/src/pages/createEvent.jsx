@@ -252,6 +252,7 @@ export default function CreateEventDialog({ open, onOpenChange }) {
                   id="price"
                   name="price"
                   type="number"
+                  min={0}
                   value={formData.price}
                   onChange={handleInputChange}
                   placeholder="e.g., 500"
@@ -263,7 +264,7 @@ export default function CreateEventDialog({ open, onOpenChange }) {
               <div>
                 <label htmlFor="format" className="block text-sm font-medium text-gray-200 mb-1">
                   Event Format
-               s </label>
+                </label>
                 <select
                   id="format"
                   name="format"

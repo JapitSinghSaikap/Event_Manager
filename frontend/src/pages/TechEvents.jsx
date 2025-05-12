@@ -61,7 +61,36 @@ function TechEventCard({ event }) {
           </div>
         )}
         <div className="mt-4 flex justify-between items-center">
-          <span className="text-xs text-gray-400">{event.price ? `₹${event.price}` : ""}</span>
+        <span className="inline-flex items-center px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-xs font-semibold text-gray-700 dark:text-gray-300">
+        {event.price ? (
+          <>
+            <svg
+              className="w-3 h-3 mr-1 text-green-500"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              viewBox="0 0 24 24"
+            >
+              <path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm0 0V4m0 16v-4" />
+            </svg>
+            ₹{event.price}
+          </>
+        ) : (
+          <>
+            <svg
+              className="w-3 h-3 mr-1 text-blue-500"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              viewBox="0 0 24 24"
+            >
+              <path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm0 0V4m0 16v-4" />
+            </svg>
+            Free
+          </>
+        )}
+      </span>
+
           <Link
             to={`/events/${event._id}`}
             className="rounded-full bg-purple-600 text-white text-xs px-4 py-2 font-semibold transition hover:bg-purple-700 shadow"
