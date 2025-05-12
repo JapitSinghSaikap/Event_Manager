@@ -44,3 +44,18 @@ Event_Manager/
    ```bash
    git clone https://github.com/JapitSinghSaikap/Event_Manager.git
   
+
+2. Navigate to /backend and /frontend folders:
+   ```bash
+   npm install
+
+3. Inside the /backend folder, create a .env file at the root :
+   ```bash
+   MONGODB_URI=
+   JWT_SECRET=
+   PORT=
+   EMAIL_USER=
+   EMAIL_PASS=
+   EMAIL_SERVICE=
+   RAZORPAY_KEY_ID=
+   RAZORPAY_KEY_SECRET=
