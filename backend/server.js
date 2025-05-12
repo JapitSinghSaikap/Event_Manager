@@ -20,10 +20,13 @@ connectDB();
 const organiserRoutes = require("./routes/organiser_routes");
 const eventRoutes = require("./routes/event_routes");
 const assignmentRoutes = require("./routes/assignment_routes");
+const paymentRoutes = require("./utils/payment");
+
 
 app.use("/organisers", organiserRoutes);
 app.use("/events", eventRoutes);
 app.use("/assignments", assignmentRoutes);
+app.use("/payment", paymentRoutes);
 
 // Server Listen
 const port = process.env.PORT || 5000;
