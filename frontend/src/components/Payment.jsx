@@ -2,6 +2,8 @@ import React from 'react';
 import { toast } from 'sonner';
 
 const Payment = ({ amount, onPaymentSuccess }) => {
+  const razorpay_key_id = "rzp_test_zlpkrN2ub1TXkS";
+
   const handlePayment = async () => {
     try {
       const res = await fetch("http://localhost:5000/payment/create-order", {
@@ -19,7 +21,7 @@ const Payment = ({ amount, onPaymentSuccess }) => {
       const { id, amount: orderAmount, currency } = orderData.order;
 
       const options = {
-        key: process.env.RAZORPAY_KEY_ID,
+        key: razorpay_key_id,
         amount: orderAmount,
         currency,
         order_id: id,
