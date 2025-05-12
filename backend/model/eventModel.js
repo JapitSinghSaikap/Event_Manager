@@ -25,6 +25,11 @@ const eventSchema = new mongoose.Schema({
     type: [String],
     default: []
   },
+  price : {
+    type: Number,
+    default: 0,
+    min: [0, "Price cannot be negative"]
+  },
   startDate: { 
     type: Date,
     required: true 
