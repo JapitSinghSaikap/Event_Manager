@@ -28,8 +28,8 @@ exports.addEventToCreatedUser = async (req, res) => {
     const { id } = req.params;
     const { eventID } = req.body;
 
-    console.log("User ID:", id);
-    console.log("Event ID:", eventID);
+    // console.log("User ID:", id);
+    // console.log("Event ID:", eventID);
 
     try {
         if (!eventID) {
@@ -42,7 +42,7 @@ exports.addEventToCreatedUser = async (req, res) => {
             { new: true, runValidators: true }
         );
 
-        console.log("Updated User:", updatedUser);
+        // console.log("Updated User:", updatedUser);
         if (!updatedUser) {
             return res.status(404).json({ message: "User not found" });
         }

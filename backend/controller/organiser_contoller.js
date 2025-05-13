@@ -97,7 +97,6 @@ exports.signup = async (req, res) => {
 
         const newUser = new User({ name, email, password });
         await newUser.save();
-        console.log(newUser.name);
         return res.status(201).json({
             message: "Signup successful",
             
@@ -176,9 +175,6 @@ exports.getAllCreatedEvents = async (req, res) => {
             event: created.event,
             createdAt: created.createdAt,
         }));
-
-        console.log(createdEvents);
-
         return res.status(200).json(createdEvents);
     } catch (error) {
         console.error("Error fetching created events:", error);
